@@ -1,0 +1,161 @@
+
+00:00 +0: loading D:/FlutterProject/MyMuSicProject/my_music_project/test/architecture_test.dart                                                                                                        
+00:01 +0: loading D:/FlutterProject/MyMuSicProject/my_music_project/test/architecture_test.dart                                                                                                        
+00:01 +0: D:/FlutterProject/MyMuSicProject/my_music_project/test/architecture_test.dart: Clean Architecture dependency rules domain is independent from Flutter and outer layers                       
+00:01 +1: D:/FlutterProject/MyMuSicProject/my_music_project/test/architecture_test.dart: Clean Architecture dependency rules domain is independent from Flutter and outer layers                       
+00:01 +1: D:/FlutterProject/MyMuSicProject/my_music_project/test/architecture_test.dart: Clean Architecture dependency rules data does not depend on presentation or composition root                  
+00:01 +2: D:/FlutterProject/MyMuSicProject/my_music_project/test/architecture_test.dart: Clean Architecture dependency rules data does not depend on presentation or composition root                  
+00:01 +2: D:/FlutterProject/MyMuSicProject/my_music_project/test/architecture_test.dart: Clean Architecture dependency rules presentation does not import data implementations or plugins              
+00:01 +3: D:/FlutterProject/MyMuSicProject/my_music_project/test/architecture_test.dart: Clean Architecture dependency rules presentation does not import data implementations or plugins              
+00:01 +3: D:/FlutterProject/MyMuSicProject/my_music_project/test/architecture_test.dart: Clean Architecture dependency rules core stays framework and outer-layer independent                          
+00:01 +4: D:/FlutterProject/MyMuSicProject/my_music_project/test/architecture_test.dart: Clean Architecture dependency rules core stays framework and outer-layer independent                          
+00:01 +4: loading D:/FlutterProject/MyMuSicProject/my_music_project/test/data/audio_player_service_test.dart                                                                                           
+00:01 +4: D:/FlutterProject/MyMuSicProject/my_music_project/test/data/audio_player_service_test.dart: all existing loop/shuffle mode mappings remain unchanged                                         
+00:01 +5: D:/FlutterProject/MyMuSicProject/my_music_project/test/data/audio_player_service_test.dart: all existing loop/shuffle mode mappings remain unchanged                                         
+00:01 +5: D:/FlutterProject/MyMuSicProject/my_music_project/test/data/audio_player_service_test.dart: notification play/pause callbacks and repository native commands do not recurse                  
+00:01 +6: D:/FlutterProject/MyMuSicProject/my_music_project/test/data/audio_player_service_test.dart: notification play/pause callbacks and repository native commands do not recurse                  
+00:01 +6: D:/FlutterProject/MyMuSicProject/my_music_project/test/data/audio_player_service_test.dart: manual next and previous still delegate to the native player                                     
+00:01 +7: D:/FlutterProject/MyMuSicProject/my_music_project/test/data/audio_player_service_test.dart: manual next and previous still delegate to the native player                                     
+00:01 +7: D:/FlutterProject/MyMuSicProject/my_music_project/test/data/audio_player_service_test.dart: native playback errors reach the repository error stream                                         
+00:01 +8: D:/FlutterProject/MyMuSicProject/my_music_project/test/data/audio_player_service_test.dart: native playback errors reach the repository error stream                                         
+00:02 +8: D:/FlutterProject/MyMuSicProject/my_music_project/test/data/audio_player_service_test.dart: native playback errors reach the repository error stream                                         
+00:02 +8: loading D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/app_initialization_usecase_test.dart                                                                                   
+00:02 +8: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/app_initialization_usecase_test.dart: AppInitializationUseCase calls gateway.initialize before loading app state               
+00:02 +9: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/app_initialization_usecase_test.dart: AppInitializationUseCase calls gateway.initialize before loading app state               
+00:02 +9: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/app_initialization_usecase_test.dart: AppInitializationUseCase returns null languageCode when none is saved                    
+00:02 +10: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/app_initialization_usecase_test.dart: AppInitializationUseCase returns null languageCode when none is saved                   
+00:02 +10: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/app_initialization_usecase_test.dart: AppInitializationUseCase reports hasDeniedBefore from preferences                       
+00:02 +11: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/app_initialization_usecase_test.dart: AppInitializationUseCase reports hasDeniedBefore from preferences                       
+00:02 +11: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/app_initialization_usecase_test.dart: AppInitializationUseCase propagates gateway initialization errors                       
+00:02 +12: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/app_initialization_usecase_test.dart: AppInitializationUseCase propagates gateway initialization errors                       
+00:02 +12: loading D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/load_songs_usecase_test.dart                                                                                          
+00:02 +12: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/load_songs_usecase_test.dart: scan failure preserves cache and does not save an empty replacement                             
+00:02 +13: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/load_songs_usecase_test.dart: scan failure preserves cache and does not save an empty replacement                             
+00:02 +13: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/load_songs_usecase_test.dart: successful scan persists and synchronizes the refreshed library                                 
+00:02 +14: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/load_songs_usecase_test.dart: successful scan persists and synchronizes the refreshed library                                 
+00:02 +14: loading D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/locale_usecases_test.dart                                                                                             
+00:02 +14: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/locale_usecases_test.dart: LocaleUseCases loadLanguageCode returns null when no language is saved                             
+00:02 +15: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/locale_usecases_test.dart: LocaleUseCases loadLanguageCode returns null when no language is saved                             
+00:02 +15: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/locale_usecases_test.dart: LocaleUseCases loadLanguageCode returns saved language code                                        
+00:02 +16: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/locale_usecases_test.dart: LocaleUseCases loadLanguageCode returns saved language code                                        
+00:02 +16: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/locale_usecases_test.dart: LocaleUseCases saveLanguageCode persists the code                                                  
+00:02 +17: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/locale_usecases_test.dart: LocaleUseCases saveLanguageCode persists the code                                                  
+00:02 +17: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/locale_usecases_test.dart: LocaleUseCases saveLanguageCode overwrites previous value                                          
+00:02 +18: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/locale_usecases_test.dart: LocaleUseCases saveLanguageCode overwrites previous value                                          
+00:02 +18: loading D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/permission_usecases_test.dart                                                                                         
+00:02 +18: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/permission_usecases_test.dart: PermissionUseCases loadCurrent returns granted status with no prior denial                     
+00:02 +19: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/permission_usecases_test.dart: PermissionUseCases loadCurrent returns granted status with no prior denial                     
+00:02 +19: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/permission_usecases_test.dart: PermissionUseCases loadCurrent returns denied status with prior denial flag                    
+00:02 +20: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/permission_usecases_test.dart: PermissionUseCases loadCurrent returns denied status with prior denial flag                    
+00:02 +20: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/permission_usecases_test.dart: PermissionUseCases loadCurrent returns permanentlyDenied status                                
+00:02 +21: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/permission_usecases_test.dart: PermissionUseCases loadCurrent returns permanentlyDenied status                                
+00:02 +21: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/permission_usecases_test.dart: PermissionUseCases request sets permissionDenied to false when granted                         
+00:02 +22: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/permission_usecases_test.dart: PermissionUseCases request sets permissionDenied to false when granted                         
+00:02 +22: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/permission_usecases_test.dart: PermissionUseCases request sets permissionDenied to true when denied                           
+00:02 +23: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/permission_usecases_test.dart: PermissionUseCases request sets permissionDenied to true when denied                           
+00:02 +23: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/permission_usecases_test.dart: PermissionUseCases request sets permissionDenied to true when permanently denied               
+00:02 +24: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/permission_usecases_test.dart: PermissionUseCases request sets permissionDenied to true when permanently denied               
+00:02 +24: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/permission_usecases_test.dart: PermissionUseCases resetDeniedStatus sets permissionDenied to false                            
+00:02 +25: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/permission_usecases_test.dart: PermissionUseCases resetDeniedStatus sets permissionDenied to false                            
+00:03 +25: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/permission_usecases_test.dart: PermissionUseCases resetDeniedStatus sets permissionDenied to false                            
+00:03 +25: loading D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart                                                                                           
+00:03 +25: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: reordering retains song identity, position and playing state                                     
+00:03 +26: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: reordering retains song identity, position and playing state                                     
+00:03 +26: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: same queue refresh never reloads audio sources                                                   
+00:03 +27: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: same queue refresh never reloads audio sources                                                   
+00:03 +27: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: removing current song selects first song paused                                                  
+00:03 +28: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: removing current song selects first song paused                                                  
+00:03 +28: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: removing earlier song preserves current song and paused position                                 
+00:03 +29: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: removing earlier song preserves current song and paused position                                 
+00:03 +29: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: empty queue clears song and stops audio                                                          
+00:03 +30: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: empty queue clears song and stops audio                                                          
+00:03 +30: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: restored selection and scan both use filtered queue                                              
+00:03 +31: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: restored selection and scan both use filtered queue                                              
+00:03 +31: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: playlist edits and deletion refresh active queue                                                 
+00:03 +32: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: playlist edits and deletion refresh active queue                                                 
+00:03 +32: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: search switches to full queue and selects by path                                                
+00:03 +33: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: search switches to full queue and selects by path                                                
+00:03 +33: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: old completion cannot pause a newly selected song                                                
+00:03 +34: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: old completion cannot pause a newly selected song                                                
+00:03 +34: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: overlapping selections finish with matching metadata and saved path                              
+00:03 +35: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: overlapping selections finish with matching metadata and saved path                              
+00:03 +36: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: overlapping selections finish with matching metadata and saved path                              
+00:03 +37: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/song_entity_test.dart: Song entity durationText formats minutes and seconds correctly                                         
+00:03 +38: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: pause queued behind play is the final state                                                      
+00:03 +39: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: pause queued behind play is the final state                                                      
+00:03 +40: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: pause queued behind play is the final state                                                      
+00:03 +41: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: pause queued behind play is the final state                                                      
+00:03 +42: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: pause queued behind play is the final state                                                      
+00:03 +43: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: pause queued behind play is the final state                                                      
+00:03 +44: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: pause queued behind play is the final state                                                      
+00:03 +45: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: pause queued behind play is the final state                                                      
+00:03 +46: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: pause queued behind play is the final state                                                      
+00:03 +47: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/song_entity_test.dart: Song entity isFavorite defaults to false                                                               
+00:03 +48: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: failed command does not poison later commands                                                    
+00:03 +49: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: failed command does not poison later commands                                                    
+00:03 +50: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: failed command does not poison later commands                                                    
+00:03 +51: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: failed command does not poison later commands                                                    
+00:03 +52: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: failed command does not poison later commands                                                    
+00:03 +52: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: rapid queue changes finish with the latest queue and identity                                    
+00:03 +53: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: rapid queue changes finish with the latest queue and identity                                    
+00:03 +53: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: auto advance during mode persistence is not dropped                                              
+00:03 +54: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: auto advance during mode persistence is not dropped                                              
+00:03 +54: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: native error during an older command cannot pause the queued selection                           
+00:03 +55: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: native error during an older command cannot pause the queued selection                           
+00:03 +55: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: track tail and seeking near end do not stop playback                                             
+00:03 +56: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: track tail and seeking near end do not stop playback                                             
+00:03 +56: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: completion stops at song start when continue is off                                              
+00:03 +57: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: completion stops at song start when continue is off                                              
+00:03 +57: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: native one-song loop stops only after actual loop boundary                                       
+00:03 +58: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: native one-song loop stops only after actual loop boundary                                       
+00:03 +58: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: continuous auto advance keeps metadata and stats on the new song                                 
+00:03 +59: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: continuous auto advance keeps metadata and stats on the new song                                 
+00:03 +59: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: play error is observable without recording a successful play                                     
+00:03 +60: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: play error is observable without recording a successful play                                     
+00:03 +60: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: count starts on confirmed playback, not command completion                                       
+00:03 +61: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: count starts on confirmed playback, not command completion                                       
+00:03 +61: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: late play error from an older session cannot pause a newer song                                  
+00:03 +62: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: late play error from an older session cannot pause a newer song                                  
+00:03 +62: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: notification controls share the command lane                                                     
+00:03 +63: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: notification controls share the command lane                                                     
+00:03 +63: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: repeat and continue-off retain existing next behavior                                            
+00:03 +64: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: repeat and continue-off retain existing next behavior                                            
+00:03 +64: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: mode persistence failure restores effective mode                                                 
+00:03 +65: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: mode persistence failure restores effective mode                                                 
+00:04 +65: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: mode persistence failure restores effective mode                                                 
+00:05 +65: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: mode persistence failure restores effective mode                                                 
+00:06 +65: D:/FlutterProject/MyMuSicProject/my_music_project/test/domain/playback_usecases_test.dart: mode persistence failure restores effective mode                                                 
+00:06 +65: loading D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/audio_provider_test.dart                                                                                        
+00:06 +65: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/audio_provider_test.dart: play state follows engine signals instead of command completion                               
+00:06 +66: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/audio_provider_test.dart: play state follows engine signals instead of command completion                               
+00:06 +66: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/audio_provider_test.dart: direct domain clear removes old song from provider                                            
+00:06 +67: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/audio_provider_test.dart: direct domain clear removes old song from provider                                            
+00:06 +67: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/audio_provider_test.dart: failed playback reports error and can recover on retry                                        
+00:06 +68: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/audio_provider_test.dart: failed playback reports error and can recover on retry                                        
+00:06 +68: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/audio_provider_test.dart: empty play never creates a phantom playing state                                              
+00:06 +69: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/audio_provider_test.dart: empty play never creates a phantom playing state                                              
+00:06 +69: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/audio_provider_test.dart: loading and buffering are visible and error clears loading                                    
+00:06 +70: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/audio_provider_test.dart: loading and buffering are visible and error clears loading                                    
+00:06 +70: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/audio_provider_test.dart: rapid mode toggles use domain state and retain all presses                                    
+00:06 +71: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/audio_provider_test.dart: rapid mode toggles use domain state and retain all presses                                    
+00:06 +71: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/audio_provider_test.dart: dispose during pending command does not update disposed state                                 
+00:06 +72: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/audio_provider_test.dart: dispose during pending command does not update disposed state                                 
+00:07 +72: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/audio_provider_test.dart: dispose during pending command does not update disposed state                                 
+00:07 +72: loading D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/playlist_playback_test.dart                                                                                     
+00:07 +72: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/playlist_playback_test.dart: restored filter and refresh keep UI and player queue aligned                               
+00:07 +73: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/playlist_playback_test.dart: restored filter and refresh keep UI and player queue aligned                               
+00:07 +73: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/playlist_playback_test.dart: editing selected playlist changes queue immediately                                        
+00:07 +74: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/playlist_playback_test.dart: editing selected playlist changes queue immediately                                        
+00:07 +74: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/playlist_playback_test.dart: favorite removal from active favorites clears provider and queue                           
+00:07 +75: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/playlist_playback_test.dart: favorite removal from active favorites clears provider and queue                           
+00:07 +75: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/playlist_playback_test.dart: deleting an earlier library file preserves current path and selection                      
+00:07 +76: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/playlist_playback_test.dart: deleting an earlier library file preserves current path and selection                      
+00:07 +76: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/playlist_playback_test.dart: tap a search result switches to all songs and plays that path                              
+00:08 +76: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/playlist_playback_test.dart: tap a search result switches to all songs and plays that path                              
+00:08 +77: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/playlist_playback_test.dart: tap a search result switches to all songs and plays that path                              
+00:09 +77: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/playlist_playback_test.dart: tap a search result switches to all songs and plays that path                              
+00:09 +77: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/playlist_playback_test.dart: tap a search result switches to all songs and plays that path                              
+player page build
+
+00:09 +78: D:/FlutterProject/MyMuSicProject/my_music_project/test/presentation/playlist_playback_test.dart: tap a search result switches to all songs and plays that path                              
+00:09 +78: All tests passed!                                                                                                                                                                           

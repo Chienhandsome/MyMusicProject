@@ -146,5 +146,6 @@
         "type": "String"
       }
     }
-  }
+  },
+  "playbackError": "Không thể phát bài hát này. Vui lòng thử lại."
 }

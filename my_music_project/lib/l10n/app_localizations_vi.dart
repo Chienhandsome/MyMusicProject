@@ -343,4 +343,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String selectedCount(String count) {
     return 'Đã chọn $count';
   }
+
+  @override
+  String get playbackError => 'Không thể phát bài hát này. Vui lòng thử lại.';
 }

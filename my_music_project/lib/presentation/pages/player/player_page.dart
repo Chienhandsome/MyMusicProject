@@ -1,3 +1,4 @@
+import '../../widgets/playback_feedback.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -33,7 +34,8 @@ class PlayerPage extends ConsumerWidget {
       },
     );
 
-    return Scaffold(
+    return PlaybackFeedback(
+        child: Scaffold(
       resizeToAvoidBottomInset: false,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -155,7 +157,7 @@ class PlayerPage extends ConsumerWidget {
                 ),
               ),
             ),
-    );
+    ));
   }
 }
 

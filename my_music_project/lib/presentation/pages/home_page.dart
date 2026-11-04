@@ -1,3 +1,4 @@
+import '../widgets/playback_feedback.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'playlist/playlist_page.dart';
@@ -28,7 +29,8 @@ class _HomePageState extends State<HomePage> {
       print("home page build - index: $_currentIndex");
     }
 
-    return Scaffold(
+    return PlaybackFeedback(
+        child: Scaffold(
       backgroundColor: const Color(0xFF121212),
       body: IndexedStack(
         index: _currentIndex,
@@ -75,6 +77,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-    );
+    ));
   }
 }

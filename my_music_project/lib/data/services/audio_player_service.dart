@@ -34,26 +34,43 @@ class AudioPlayerService extends BaseAudioHandler with SeekHandler {
     action: MediaAction.stop,
   );
 
-  final AudioPlayer _audioPlayer = AudioPlayer();
+  final AudioPlayer _audioPlayer;
   StreamSubscription<PlaybackEvent>? _playbackEventSubscription;
   PlaybackCallback? _onSkipToNext;
   PlaybackCallback? _onSkipToPrevious;
+  PlaybackCallback? _onPlay;
+  PlaybackCallback? _onPause;
+  PlaybackCallback? _onStop;
+  Future<void> Function(Duration)? _onSeek;
+  final _errors = StreamController<Object>.broadcast();
+
+  Stream<Object> get errorStream => _errors.stream;
 
   AudioPlayer get audioPlayer => _audioPlayer;
 
-  AudioPlayerService() {
+  AudioPlayerService({AudioPlayer? player})
+      : _audioPlayer = player ?? AudioPlayer() {
     playbackState.add(_transformEvent(_audioPlayer.playbackEvent));
     _playbackEventSubscription = _audioPlayer.playbackEventStream.listen(
       (event) => playbackState.add(_transformEvent(event)),
+      onError: (Object error, StackTrace stack) => _errors.add(error),
     );
   }
 
   void setNotificationCallbacks({
     required PlaybackCallback onSkipToNext,
     required PlaybackCallback onSkipToPrevious,
+    PlaybackCallback? onPlay,
+    PlaybackCallback? onPause,
+    PlaybackCallback? onStop,
+    Future<void> Function(Duration)? onSeek,
   }) {
     _onSkipToNext = onSkipToNext;
     _onSkipToPrevious = onSkipToPrevious;
+    _onPlay = onPlay;
+    _onPause = onPause;
+    _onStop = onStop;
+    _onSeek = onSeek;
   }
 
   Future<void> setPlaylist(
@@ -173,17 +190,23 @@ class AudioPlayerService extends BaseAudioHandler with SeekHandler {
   }
 
   @override
-  Future<void> play() async {
+  Future<void> play() => _onPlay?.call() ?? playAudio();
+
+  Future<void> playAudio() async {
     await _audioPlayer.play();
   }
 
   @override
-  Future<void> pause() async {
+  Future<void> pause() => _onPause?.call() ?? pauseAudio();
+
+  Future<void> pauseAudio() async {
     await _audioPlayer.pause();
   }
 
   @override
-  Future<void> stop() async {
+  Future<void> stop() => _onStop?.call() ?? stopAudio();
+
+  Future<void> stopAudio() async {
     await _audioPlayer.stop();
     return super.stop();
   }
@@ -199,7 +222,10 @@ class AudioPlayerService extends BaseAudioHandler with SeekHandler {
   }
 
   @override
-  Future<void> seek(Duration position) async {
+  Future<void> seek(Duration position) =>
+      _onSeek?.call(position) ?? seekAudio(position);
+
+  Future<void> seekAudio(Duration position) async {
     await _audioPlayer.seek(position);
   }
 
@@ -210,6 +236,7 @@ class AudioPlayerService extends BaseAudioHandler with SeekHandler {
 
   void dispose() {
     _playbackEventSubscription?.cancel();
+    _errors.close();
     _audioPlayer.dispose();
   }
 }

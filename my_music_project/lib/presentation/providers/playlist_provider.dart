@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../di/app_providers.dart';
 import '../../domain/entities/playlist.dart';
 import '../../domain/entities/song.dart';
-import '../../domain/usecases/playback_usecases.dart';
+import '../../domain/usecases/playback_queue_usecases.dart';
 import '../../domain/usecases/playlist_usecases.dart';
 import 'music_provider.dart';
 
@@ -30,8 +30,9 @@ class PlaylistState {
   }) {
     return PlaylistState(
       playlists: playlists ?? this.playlists,
-      currentPlaylistId:
-          clearPlaylistId ? null : (currentPlaylistId ?? this.currentPlaylistId),
+      currentPlaylistId: clearPlaylistId
+          ? null
+          : (currentPlaylistId ?? this.currentPlaylistId),
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
@@ -49,20 +50,33 @@ class PlaylistState {
 
 class PlaylistNotifier extends StateNotifier<PlaylistState> {
   final PlaylistUseCases _playlistUseCases;
-  final PlaybackUseCases _playbackUseCases;
-  final List<Song> Function() _getAllSongs;
+  final PlaybackQueueUseCases _queue;
+  Future<void> _selectionTail = Future<void>.value();
+  int _selectionRevision = 0;
+  int _loadRevision = 0;
 
   PlaylistNotifier(
     this._playlistUseCases,
-    this._playbackUseCases,
-    this._getAllSongs,
+    this._queue,
   ) : super(const PlaylistState());
 
   Future<void> loadPlaylists() async {
+    final loadRevision = ++_loadRevision;
+    final selectionRevision = _selectionRevision;
     state = state.copyWith(isLoading: true, clearError: true);
     try {
       final playlists = await _playlistUseCases.loadPlaylists();
-      final currentId = await _playlistUseCases.getCurrentPlaylistId();
+      var currentId = await _playlistUseCases.getCurrentPlaylistId();
+      if (!mounted ||
+          loadRevision != _loadRevision ||
+          selectionRevision != _selectionRevision) {
+        return;
+      }
+      if (currentId != null &&
+          !playlists.any((playlist) => playlist.id == currentId)) {
+        await _playlistUseCases.setCurrentPlaylistId(null);
+        currentId = null;
+      }
       state = state.copyWith(
         playlists: playlists,
         currentPlaylistId: currentId,
@@ -70,7 +84,9 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
         clearError: true,
         clearPlaylistId: currentId == null,
       );
+      await _queue.refresh();
     } catch (e) {
+      if (!mounted || loadRevision != _loadRevision) return;
       state = state.copyWith(
         isLoading: false,
         errorMessage: 'Failed to load playlists: $e',
@@ -106,6 +122,7 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
         clearPlaylistId: clearCurrent,
         clearError: true,
       );
+      await _queue.refresh();
     } catch (e) {
       state = state.copyWith(errorMessage: 'Failed to delete playlist: $e');
     }
@@ -130,16 +147,21 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
     }
   }
 
-  Future<void> selectPlaylist(String playlistId) async {
-    await _playlistUseCases.setCurrentPlaylistId(playlistId);
-    state = state.copyWith(currentPlaylistId: playlistId);
-    await _syncAudioPlaylist();
-  }
+  Future<void> selectPlaylist(String playlistId) => _select(playlistId);
 
-  Future<void> clearSelection() async {
-    await _playlistUseCases.setCurrentPlaylistId(null);
-    state = state.copyWith(clearPlaylistId: true);
-    await _syncAudioPlaylist();
+  Future<void> clearSelection() => _select(null);
+
+  Future<void> _select(String? id) {
+    _selectionRevision++;
+    final result = _selectionTail.then((_) async {
+      await _playlistUseCases.setCurrentPlaylistId(id);
+      if (!mounted) return;
+      state = state.copyWith(
+          currentPlaylistId: id, clearPlaylistId: id == null, isLoading: false);
+      await _syncAudioPlaylist();
+    });
+    _selectionTail = result.catchError((Object _) {});
+    return result;
   }
 
   /// Lọc songs theo playlist hiện tại
@@ -151,9 +173,7 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
 
   /// Đồng bộ audio player playlist với playlist đang chọn
   Future<void> _syncAudioPlaylist() async {
-    final allSongs = _getAllSongs();
-    final filtered = filterSongs(allSongs);
-    await _playbackUseCases.setPlaylist(filtered);
+    await _queue.refresh();
   }
 
   Future<void> _refreshPlaylist(String playlistId) async {
@@ -165,14 +185,18 @@ class PlaylistNotifier extends StateNotifier<PlaylistState> {
     }).toList();
 
     state = state.copyWith(playlists: playlists);
+    await _queue.refresh();
   }
 }
 
 final playlistProvider =
     StateNotifierProvider<PlaylistNotifier, PlaylistState>((ref) {
-  return PlaylistNotifier(
+  final notifier = PlaylistNotifier(
     ref.watch(playlistUseCasesProvider),
-    ref.watch(playbackUseCasesProvider),
-    () => ref.read(musicProvider).songs,
+    ref.watch(playbackQueueUseCasesProvider),
   );
+  ref.listen(musicProvider.select((state) => state.songs), (_, __) {
+    notifier.loadPlaylists();
+  });
+  return notifier;
 });

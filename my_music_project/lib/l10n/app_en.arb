@@ -146,5 +146,6 @@
         "type": "String"
       }
     }
-  }
+  },
+  "playbackError": "Unable to play this song. Please try again."
 }

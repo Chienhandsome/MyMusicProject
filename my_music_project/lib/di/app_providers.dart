@@ -27,6 +27,7 @@ import '../domain/usecases/load_songs_usecase.dart';
 import '../domain/usecases/locale_usecases.dart';
 import '../domain/usecases/permission_usecases.dart';
 import '../domain/usecases/playback_usecases.dart';
+import '../domain/usecases/playback_queue_usecases.dart';
 import '../domain/usecases/playlist_usecases.dart';
 
 final appSettingsServiceProvider = Provider<AppSettingsService>((ref) {
@@ -81,6 +82,13 @@ final playbackUseCasesProvider = Provider<PlaybackUseCases>((ref) {
 final loadSongsUseCaseProvider = Provider<LoadSongsUseCase>((ref) {
   return LoadSongsUseCase(
     ref.watch(musicRepositoryProvider),
+    ref.watch(playbackQueueUseCasesProvider),
+    ref.watch(playlistUseCasesProvider),
+  );
+});
+
+final playbackQueueUseCasesProvider = Provider<PlaybackQueueUseCases>((ref) {
+  return PlaybackQueueUseCases(
     ref.watch(playbackUseCasesProvider),
     ref.watch(playlistUseCasesProvider),
   );

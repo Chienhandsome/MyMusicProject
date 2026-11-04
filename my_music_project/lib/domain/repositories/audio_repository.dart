@@ -28,6 +28,10 @@ abstract class AudioRepository {
   void setNotificationCallbacks({
     required Future<void> Function() onSkipToNext,
     required Future<void> Function() onSkipToPrevious,
+    Future<void> Function()? onPlay,
+    Future<void> Function()? onPause,
+    Future<void> Function()? onStop,
+    Future<void> Function(Duration)? onSeek,
   });
 
   int? get currentIndex;
@@ -35,6 +39,8 @@ abstract class AudioRepository {
   bool get isPlaying;
 
   Duration? get duration;
+
+  Duration get position;
 
   double get speed;
 
@@ -47,6 +53,8 @@ abstract class AudioRepository {
   Stream<int?> get currentIndexStream;
 
   Stream<PlaybackDiscontinuity> get discontinuityStream;
+
+  Stream<Object> get errorStream;
 
   void dispose();
 }

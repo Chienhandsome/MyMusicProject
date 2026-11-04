@@ -342,4 +342,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String selectedCount(String count) {
     return '$count selected';
   }
+
+  @override
+  String get playbackError => 'Unable to play this song. Please try again.';
 }

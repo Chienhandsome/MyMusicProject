@@ -733,6 +733,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count} selected'**
   String selectedCount(String count);
+
+  /// No description provided for @playbackError.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to play this song. Please try again.'**
+  String get playbackError;
 }
 
 class _AppLocalizationsDelegate

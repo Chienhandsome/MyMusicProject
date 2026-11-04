@@ -171,7 +171,7 @@ class _SearchPageState extends ConsumerState<SearchPage>
 
   Widget _buildEmptyState() {
     final songs = ref.read(musicProvider).songs;
-    final audioState = ref.read(audioProvider);
+    final audioState = ref.watch(audioProvider);
     final recentSongs = songs.take(5).toList();
     final l10n = AppLocalizations.of(context)!;
 
@@ -233,6 +233,7 @@ class _SearchPageState extends ConsumerState<SearchPage>
               itemCount: recentSongs.length,
               itemBuilder: (context, index) {
                 return SongItem(
+                  fromSearch: true,
                   index: songs.indexOf(recentSongs[index]),
                   song: recentSongs[index],
                   currentIndex: audioState.currentIndex,
@@ -301,7 +302,7 @@ class _SearchPageState extends ConsumerState<SearchPage>
 
   Widget _buildSearchResults() {
     final songs = ref.read(musicProvider).songs;
-    final audioState = ref.read(audioProvider);
+    final audioState = ref.watch(audioProvider);
     final l10n = AppLocalizations.of(context)!;
 
     return Column(
@@ -346,6 +347,7 @@ class _SearchPageState extends ConsumerState<SearchPage>
                   );
                 },
                 child: SongItem(
+                  fromSearch: true,
                   index: originalIndex,
                   song: song,
                   currentIndex: audioState.currentIndex,

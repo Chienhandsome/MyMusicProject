@@ -29,16 +29,16 @@ class AudioRepositoryImpl implements AudioRepository {
   Future<void> seekToPrevious() => _audioService.seekToPrevious();
 
   @override
-  Future<void> play() => _audioService.play();
+  Future<void> play() => _audioService.playAudio();
 
   @override
-  Future<void> pause() => _audioService.pause();
+  Future<void> pause() => _audioService.pauseAudio();
 
   @override
-  Future<void> stop() => _audioService.stop();
+  Future<void> stop() => _audioService.stopAudio();
 
   @override
-  Future<void> seek(Duration position) => _audioService.seek(position);
+  Future<void> seek(Duration position) => _audioService.seekAudio(position);
 
   @override
   Future<void> setSpeed(double speed) => _audioService.setSpeed(speed);
@@ -55,10 +55,18 @@ class AudioRepositoryImpl implements AudioRepository {
   void setNotificationCallbacks({
     required Future<void> Function() onSkipToNext,
     required Future<void> Function() onSkipToPrevious,
+    Future<void> Function()? onPlay,
+    Future<void> Function()? onPause,
+    Future<void> Function()? onStop,
+    Future<void> Function(Duration)? onSeek,
   }) {
     _audioService.setNotificationCallbacks(
       onSkipToNext: onSkipToNext,
       onSkipToPrevious: onSkipToPrevious,
+      onPlay: onPlay,
+      onPause: onPause,
+      onStop: onStop,
+      onSeek: onSeek,
     );
   }
 
@@ -70,6 +78,9 @@ class AudioRepositoryImpl implements AudioRepository {
 
   @override
   Duration? get duration => _audioService.audioPlayer.duration;
+
+  @override
+  Duration get position => _audioService.audioPlayer.position;
 
   @override
   double get speed => _audioService.audioPlayer.speed;
@@ -114,6 +125,9 @@ class AudioRepositoryImpl implements AudioRepository {
       );
     });
   }
+
+  @override
+  Stream<Object> get errorStream => _audioService.errorStream;
 
   @override
   void dispose() => _audioService.dispose();

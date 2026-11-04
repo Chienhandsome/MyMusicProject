@@ -5,6 +5,7 @@ import '../../domain/entities/song.dart';
 import '../../l10n/app_localizations.dart';
 import '../providers/audio_provider.dart';
 import '../providers/music_provider.dart';
+import '../providers/playlist_provider.dart';
 import '../pages/player/player_page.dart';
 import '../services/song_share_service.dart';
 
@@ -14,17 +15,19 @@ class SongItem extends ConsumerWidget {
   final int index;
   final Song song;
   final int currentIndex;
+  final bool fromSearch;
 
   const SongItem({
     required this.index,
     required this.song,
     required this.currentIndex,
+    this.fromSearch = false,
     super.key,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isPlaying = currentIndex == index;
+    final isPlaying = ref.watch(audioProvider).currentSong?.path == song.path;
     final isTapLocked = ref.watch(_songItemTapLockProvider);
 
     return Card(
@@ -71,7 +74,10 @@ class SongItem extends ConsumerWidget {
       FocusScope.of(context).unfocus();
 
       try {
-        await ref.read(audioProvider.notifier).playSongAt(index);
+        if (fromSearch) {
+          await ref.read(playlistProvider.notifier).clearSelection();
+        }
+        await ref.read(audioProvider.notifier).playSong(song.path);
       } catch (_) {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -85,7 +91,8 @@ class SongItem extends ConsumerWidget {
       if (!context.mounted) return;
 
       final audioState = ref.read(audioProvider);
-      if (audioState.currentSong == null || audioState.currentIndex != index) {
+      if (audioState.currentSong?.path != song.path ||
+          audioState.errorMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(AppLocalizations.of(context)!.noSongPlaying)),
         );
@@ -164,9 +171,9 @@ class SongItem extends ConsumerWidget {
               ListTile(
                 leading:
                     const Icon(Icons.delete_rounded, color: Colors.redAccent),
-                title: Text(
+                title: const Text(
                   'Delete',
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.white),
                 ),
                 onTap: () async {
                   Navigator.pop(ctx);

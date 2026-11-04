@@ -26,10 +26,88 @@ class PlaybackUseCases implements LibraryPlaybackController {
 
   late final StreamSubscription<PlaybackProcessingState>
       _processingStateSubscription;
-  late final StreamSubscription<Duration> _positionSubscription;
+  late final StreamSubscription<bool> _playingSubscription;
+  late final StreamSubscription<Object> _errorSubscription;
+  final _errors = StreamController<String?>.broadcast();
+  PlaybackProcessingState _processingState = PlaybackProcessingState.idle;
+  int _executingGeneration = 0;
+  String? _pendingRecordPath;
+  int? _failedGeneration;
   late final StreamSubscription<int?> _currentIndexSubscription;
   late final StreamSubscription<PlaybackDiscontinuity>
       _discontinuitySubscription;
+
+  Future<void> _operationTail = Future<void>.value();
+  int _generation = 0;
+  int _pendingCommands = 0;
+  bool _disposed = false;
+  bool _changingSource = false;
+
+  Future<void> _sourceChange(Future<void> Function() action) async {
+    _changingSource = true;
+    try {
+      await action();
+    } finally {
+      _changingSource = false;
+    }
+  }
+
+  // Commands, metadata writes, and player callbacks share one ordered lane.
+  // A new command immediately invalidates callbacks from the old session.
+  Future<void> _command(Future<void> Function() action) {
+    final generation = ++_generation;
+    _pendingCommands++;
+    final result = _operationTail.then((_) async {
+      if (_disposed) return;
+      _executingGeneration = generation;
+      try {
+        await action();
+      } catch (error) {
+        if (_isCurrent(generation)) await _failPlayback(generation);
+        rethrow;
+      }
+    }).whenComplete(() => _pendingCommands--);
+    _operationTail = result.catchError((Object _) {});
+    return result;
+  }
+
+  bool _isCurrent(int generation) => !_disposed && generation == _generation;
+
+  void _playerEvent(Future<void> Function(int generation) action,
+      {int? session, bool duringCommand = false}) {
+    if (_disposed ||
+        (!duringCommand &&
+            _pendingCommands > 0 &&
+            (_changingSource || _executingGeneration != _generation))) {
+      return;
+    }
+    final generation = session ?? _generation;
+    final result = _operationTail.then((_) async {
+      if (_isCurrent(generation)) await action(generation);
+    });
+    _operationTail = result.catchError((Object _) async {
+      if (_isCurrent(generation)) await _failPlayback(generation);
+    });
+  }
+
+  Future<void> _failPlayback(int generation) async {
+    if (!_isCurrent(generation)) return;
+    _signalFailure(generation);
+    try {
+      await _audioRepository.pause();
+    } catch (_) {/* Already reporting the playback error. */}
+  }
+
+  void _signalFailure(int generation) {
+    if (!_isCurrent(generation) || _failedGeneration == generation) return;
+    _failedGeneration = generation;
+    _pendingRecordPath = null;
+    _errors.add('playbackFailed');
+  }
+
+  void _publishSong() {
+    if (!_disposed) _currentSongController.add(currentSong);
+  }
 
   List<Song> _playlist = [];
   int _currentIndex = -1;
@@ -38,7 +116,6 @@ class PlaybackUseCases implements LibraryPlaybackController {
   bool _isAudioPlaylistLoaded = false;
   bool _isBlockingAutoAdvance = false;
   bool _isManualIndexChange = false;
-  bool _isStoppingAtSongEnd = false;
   int? _manualIndexChangeTarget;
 
   PlaybackUseCases(
@@ -52,72 +129,119 @@ class PlaybackUseCases implements LibraryPlaybackController {
     _audioRepository.setNotificationCallbacks(
       onSkipToNext: playNext,
       onSkipToPrevious: playPrevious,
-    );
-    unawaited(
-      _audioRepository.setPlayMode(
-        _playMode,
-        continuePlay: _continuePlay,
-      ),
+      onPlay: play,
+      onPause: pause,
+      onStop: stop,
+      onSeek: seek,
     );
 
     _processingStateSubscription =
         _audioRepository.processingStateStream.listen((state) {
+      _processingState = state;
+      _confirmPlayback();
       if (!_continuePlay && state == PlaybackProcessingState.completed) {
-        unawaited(_stopAtCurrentSongStart());
+        _playerEvent((generation) => _stopAtCurrentSongStart(generation));
       }
     });
-    _positionSubscription = _audioRepository.positionStream.listen((position) {
-      unawaited(_stopAtSongEndIfNeeded(position));
+    _playingSubscription = _audioRepository.playingStream.listen((playing) {
+      if (playing) _confirmPlayback();
+    });
+    _errorSubscription = _audioRepository.errorStream.listen((error) {
+      final generation =
+          _pendingCommands > 0 ? _executingGeneration : _generation;
+      _signalFailure(generation);
+      _playerEvent((generation) => _failPlayback(generation),
+          session: generation, duringCommand: true);
     });
     _currentIndexSubscription =
         _audioRepository.currentIndexStream.listen((index) {
       if (_isBlockingAutoAdvance) return;
-      unawaited(_handlePlayerIndexChanged(index));
+      _playerEvent(
+          (generation) => _handlePlayerIndexChanged(index, generation));
     });
     _discontinuitySubscription =
         _audioRepository.discontinuityStream.listen((event) {
-      unawaited(_handleDiscontinuity(event));
+      _playerEvent((generation) => _handleDiscontinuity(event, generation));
     });
   }
 
   @override
-  Future<void> setPlaylist(List<Song> songs) async {
+  Future<void> setPlaylist(List<Song> songs) {
+    final snapshot = List<Song>.of(songs);
+    return _command(() => _sourceChange(() => _setPlaylist(snapshot)));
+  }
+
+  Future<void> _setPlaylist(List<Song> songs) async {
+    _pendingRecordPath = null;
+    final previousSong = currentSong;
+    final previousPosition = _audioRepository.position;
+    final wasPlaying = _audioRepository.isPlaying;
+    final sameSources = _isAudioPlaylistLoaded &&
+        songs.length == _playlist.length &&
+        List.generate(songs.length, (i) => songs[i].path == _playlist[i].path)
+            .every((same) => same);
     _playlist = List<Song>.of(songs);
-    _isAudioPlaylistLoaded = false;
 
     if (_playlist.isEmpty) {
+      _isAudioPlaylistLoaded = false;
       _currentIndex = -1;
+      await _audioRepository.pause();
       await _audioRepository.setPlaylist(const []);
-      _currentSongController.add(null);
+      _publishSong();
       return;
     }
 
-    if (_currentIndex >= _playlist.length) {
-      _currentIndex = _playlist.length - 1;
-    }
-
-    await _restoreLastSong();
-    if (_currentIndex != -1) {
-      await _audioRepository.setPlaylist(
-        _playlist,
-        initialIndex: _currentIndex,
-      );
-      await _audioRepository.setPlayMode(
-        _playMode,
-        continuePlay: _continuePlay,
-      );
-      _isAudioPlaylistLoaded = true;
+    final path = previousSong?.path ?? _preferencesRepository.getLastSongPath();
+    final retainedIndex = _playlist.indexWhere((song) => song.path == path);
+    _currentIndex = retainedIndex < 0 ? 0 : retainedIndex;
+    if (!sameSources) {
+      _isAudioPlaylistLoaded = false;
+      await _audioRepository.pause();
+      _isManualIndexChange = true;
+      try {
+        await _audioRepository.setPlaylist(
+          _playlist,
+          initialIndex: _currentIndex,
+        );
+        if (previousSong != null && retainedIndex >= 0) {
+          await _audioRepository.seek(previousPosition);
+        }
+        await _audioRepository.setPlayMode(
+          _playMode,
+          continuePlay: _continuePlay,
+        );
+        _isAudioPlaylistLoaded = true;
+      } finally {
+        _isManualIndexChange = false;
+      }
     }
 
     final song = currentSong;
     if (song != null) {
       await _audioRepository.setCurrentSong(song);
     }
-    _currentSongController.add(song);
+    _publishSong();
+    if (!sameSources &&
+        wasPlaying &&
+        previousSong != null &&
+        retainedIndex >= 0) {
+      _startPlayback(record: false);
+    }
   }
 
-  Future<void> playSongAt(int index) async {
-    if (index < 0 || index >= _playlist.length) return;
+  Future<void> playSong(String path) => _command(() => _sourceChange(() async {
+        final index = _playlist.indexWhere((song) => song.path == path);
+        if (index < 0) throw StateError('Song is not in the active queue');
+        await _playSongAt(index);
+      }));
+
+  Future<void> playSongAt(int index) =>
+      _command(() => _sourceChange(() => _playSongAt(index)));
+
+  Future<void> _playSongAt(int index) async {
+    if (index < 0 || index >= _playlist.length) {
+      throw StateError('Song is not in the active queue');
+    }
 
     _currentIndex = index;
     final song = _playlist[index];
@@ -136,22 +260,55 @@ class PlaybackUseCases implements LibraryPlaybackController {
       _isAudioPlaylistLoaded = true;
     }
     await _preferencesRepository.setLastSongPath(song.path);
-    await _recordPlayback(song);
     await _audioRepository.setCurrentSong(song);
-    _currentSongController.add(currentSong);
+    _publishSong();
     _startPlayback();
   }
 
-  Future<void> play() async {
+  Future<void> play() => _command(_play);
+
+  Future<void> _play() async {
     final song = currentSong;
-    if (song == null) return;
+    if (song == null) throw StateError('No song selected');
+    if (!_isAudioPlaylistLoaded) {
+      await _playSongAt(_currentIndex);
+      return;
+    }
     await _preferencesRepository.setLastSongPath(song.path);
-    await _recordPlayback(song);
     _startPlayback();
   }
 
-  void _startPlayback() {
-    unawaited(_audioRepository.play().catchError((_) {}));
+  void _startPlayback({bool record = true}) {
+    if (_disposed) return;
+    final generation = _executingGeneration;
+    _pendingRecordPath = record ? currentSong?.path : null;
+    _failedGeneration = null;
+    if (!_disposed) _errors.add(null);
+    // just_audio's future completes when playback stops, not when it starts.
+    unawaited(_audioRepository.play().catchError((Object error) {
+      _signalFailure(generation);
+      _playerEvent((session) => _failPlayback(session),
+          session: generation, duringCommand: true);
+    }));
+    _confirmPlayback(session: generation);
+  }
+
+  void _confirmPlayback({int? session}) {
+    final path = _pendingRecordPath;
+    if (path == null) return;
+    final generation = session ?? _generation;
+    _playerEvent((_) async {
+      await Future<void>.delayed(Duration.zero);
+      if (!_isCurrent(generation)) return;
+      if (_pendingRecordPath != path ||
+          currentSong?.path != path ||
+          !_audioRepository.isPlaying ||
+          _processingState != PlaybackProcessingState.ready) {
+        return;
+      }
+      _pendingRecordPath = null;
+      await _recordPlayback(currentSong!);
+    }, session: generation, duringCommand: true);
   }
 
   Future<void> _recordPlayback(Song song) async {
@@ -172,15 +329,23 @@ class PlaybackUseCases implements LibraryPlaybackController {
     }
   }
 
-  Future<void> pause() => _audioRepository.pause();
+  Future<void> pause() => _command(() async {
+        _pendingRecordPath = null;
+        await _audioRepository.pause();
+      });
 
   @override
-  Future<void> stop() => _audioRepository.stop();
+  Future<void> stop() => _command(() async {
+        _pendingRecordPath = null;
+        await _audioRepository.stop();
+      });
 
-  Future<void> playNext() async {
+  Future<void> playNext() => _command(() => _sourceChange(_playNext));
+
+  Future<void> _playNext() async {
     if (_playlist.isEmpty) return;
     if (!_isAudioPlaylistLoaded) {
-      await playSongAt((_currentIndex + 1) % _playlist.length);
+      await _playSongAt((_currentIndex + 1) % _playlist.length);
       return;
     }
 
@@ -195,11 +360,13 @@ class PlaybackUseCases implements LibraryPlaybackController {
     _startPlayback();
   }
 
-  Future<void> playPrevious() async {
+  Future<void> playPrevious() => _command(() => _sourceChange(_playPrevious));
+
+  Future<void> _playPrevious() async {
     if (_playlist.isEmpty) return;
     if (!_isAudioPlaylistLoaded) {
       final index = (_currentIndex - 1 + _playlist.length) % _playlist.length;
-      await playSongAt(index);
+      await _playSongAt(index);
       return;
     }
 
@@ -214,44 +381,64 @@ class PlaybackUseCases implements LibraryPlaybackController {
     _startPlayback();
   }
 
-  Future<void> seek(Duration position) => _audioRepository.seek(position);
+  Future<void> seek(Duration position) =>
+      _command(() => _audioRepository.seek(position));
 
-  Future<void> setSpeed(double speed) => _audioRepository.setSpeed(speed);
+  Future<void> setSpeed(double speed) =>
+      _command(() => _audioRepository.setSpeed(speed));
 
-  Future<void> setPlayMode(PlayMode mode) async {
-    _playMode = mode;
-    await _audioRepository.setPlayMode(mode, continuePlay: _continuePlay);
-    await _playConfigRepository.setPlayMode(mode);
-  }
+  Future<void> togglePlayMode() => _command(() => _setPlayMode(
+      PlayMode.values[(_playMode.index + 1) % PlayMode.values.length]));
 
-  Future<void> setContinuePlay(bool continuePlay) async {
-    _continuePlay = continuePlay;
-    await _audioRepository.setPlayMode(
-      _playMode,
-      continuePlay: _continuePlay,
-    );
-    await _playConfigRepository.setContinuePlay(continuePlay);
-  }
+  Future<void> toggleContinuePlay() =>
+      _command(() => _setContinuePlay(!_continuePlay));
 
-  Future<void> toggleFavorite(Song song) async {
-    final next = !song.isFavorite;
-    song.isFavorite = next;
+  Future<void> setPlayMode(PlayMode mode) => _command(() => _setPlayMode(mode));
+
+  Future<void> _setPlayMode(PlayMode mode) async {
     try {
-      await _musicRepository.updateFavorite(song, isFavorite: next);
-      _currentSongController.add(currentSong);
+      await _audioRepository.setPlayMode(mode, continuePlay: _continuePlay);
+      await _playConfigRepository.setPlayMode(mode);
+      _playMode = mode;
     } catch (_) {
-      song.isFavorite = !next;
+      try {
+        await _audioRepository.setPlayMode(_playMode,
+            continuePlay: _continuePlay);
+      } catch (_) {/* Preserve the original error. */}
       rethrow;
     }
   }
 
-  Future<void> _restoreLastSong() async {
-    final path = _preferencesRepository.getLastSongPath();
-    if (_currentIndex != -1 || path == null || path.isEmpty) return;
-    final index = _playlist.indexWhere((song) => song.path == path);
-    if (index == -1) return;
-    _currentIndex = index;
-    _currentSongController.add(currentSong);
+  Future<void> setContinuePlay(bool continuePlay) =>
+      _command(() => _setContinuePlay(continuePlay));
+
+  Future<void> _setContinuePlay(bool continuePlay) async {
+    try {
+      await _audioRepository.setPlayMode(_playMode, continuePlay: continuePlay);
+      await _playConfigRepository.setContinuePlay(continuePlay);
+      _continuePlay = continuePlay;
+    } catch (_) {
+      try {
+        await _audioRepository.setPlayMode(_playMode,
+            continuePlay: _continuePlay);
+      } catch (_) {/* Preserve the original error. */}
+      rethrow;
+    }
+  }
+
+  Future<void> toggleFavorite(Song song) =>
+      _command(() => _toggleFavorite(song));
+
+  Future<void> _toggleFavorite(Song song) async {
+    final next = !song.isFavorite;
+    song.isFavorite = next;
+    try {
+      await _musicRepository.updateFavorite(song, isFavorite: next);
+      _publishSong();
+    } catch (_) {
+      song.isFavorite = !next;
+      rethrow;
+    }
   }
 
   Future<void> _handleCurrentIndexChanged(
@@ -263,27 +450,31 @@ class PlaybackUseCases implements LibraryPlaybackController {
 
     _currentIndex = index;
     final song = currentSong;
-    _currentSongController.add(song);
+    _publishSong();
     if (song == null) return;
 
     await _audioRepository.setCurrentSong(song);
     await _preferencesRepository.setLastSongPath(song.path);
-    if (forceRecord) await _recordPlayback(song);
+    if (forceRecord) {
+      _pendingRecordPath = song.path;
+      _confirmPlayback();
+    }
   }
 
-  Future<void> _handlePlayerIndexChanged(int? index) async {
+  Future<void> _handlePlayerIndexChanged(int? index, int generation) async {
     if (index == null || index < 0 || index >= _playlist.length) return;
     final allowed = _isManualIndexChange || index == _manualIndexChangeTarget;
     if (index == _manualIndexChangeTarget) _manualIndexChangeTarget = null;
 
     if (!_continuePlay && !allowed && index != _currentIndex) {
-      await _blockAutoAdvance(_currentIndex);
+      await _blockAutoAdvance(_currentIndex, generation);
       return;
     }
     await _handleCurrentIndexChanged(index);
   }
 
-  Future<void> _handleDiscontinuity(PlaybackDiscontinuity event) async {
+  Future<void> _handleDiscontinuity(
+      PlaybackDiscontinuity event, int generation) async {
     if (!event.isAutoAdvance) return;
     if (_continuePlay) {
       await _handleCurrentIndexChanged(event.currentIndex, forceRecord: true);
@@ -296,22 +487,26 @@ class PlaybackUseCases implements LibraryPlaybackController {
         previousIndex >= _playlist.length) {
       return;
     }
-    await _blockAutoAdvance(previousIndex);
+    await _blockAutoAdvance(previousIndex, generation);
   }
 
-  Future<void> _blockAutoAdvance(int indexToRestore) async {
+  Future<void> _blockAutoAdvance(int indexToRestore, int generation) async {
     if (indexToRestore < 0 || indexToRestore >= _playlist.length) return;
     if (_isBlockingAutoAdvance) return;
 
     _isBlockingAutoAdvance = true;
     try {
       await Future<void>.delayed(Duration.zero);
-      await _audioRepository.seekToIndex(indexToRestore);
-      await _audioRepository.seek(Duration.zero);
+      if (!_isCurrent(generation)) return;
       await _audioRepository.pause();
+      if (!_isCurrent(generation)) return;
+      await _audioRepository.seekToIndex(indexToRestore);
+      if (!_isCurrent(generation)) return;
+      await _audioRepository.seek(Duration.zero);
+      if (!_isCurrent(generation)) return;
       _currentIndex = indexToRestore;
       final song = currentSong;
-      _currentSongController.add(song);
+      _publishSong();
       if (song != null) {
         await _audioRepository.setCurrentSong(song);
         await _preferencesRepository.setLastSongPath(song.path);
@@ -330,27 +525,12 @@ class PlaybackUseCases implements LibraryPlaybackController {
     }
   }
 
-  Future<void> _stopAtCurrentSongStart() async {
+  Future<void> _stopAtCurrentSongStart(int generation) async {
     await Future<void>.delayed(Duration.zero);
-    await _audioRepository.seek(Duration.zero);
+    if (!_isCurrent(generation)) return;
     await _audioRepository.pause();
-  }
-
-  Future<void> _stopAtSongEndIfNeeded(Duration position) async {
-    if (_continuePlay || _isStoppingAtSongEnd || !_audioRepository.isPlaying) {
-      return;
-    }
-
-    final duration = _audioRepository.duration;
-    if (duration == null || duration == Duration.zero) return;
-    if (position < duration - const Duration(milliseconds: 300)) return;
-
-    _isStoppingAtSongEnd = true;
-    try {
-      await _stopAtCurrentSongStart();
-    } finally {
-      _isStoppingAtSongEnd = false;
-    }
+    if (!_isCurrent(generation)) return;
+    await _audioRepository.seek(Duration.zero);
   }
 
   @override
@@ -369,13 +549,24 @@ class PlaybackUseCases implements LibraryPlaybackController {
 
   double get speed => _audioRepository.speed;
 
+  bool get isPlaying => _audioRepository.isPlaying;
+
+  Stream<String?> get errorStream => _errors.stream;
+
+  Stream<PlaybackProcessingState> get processingStateStream =>
+      _audioRepository.processingStateStream;
+
   Stream<bool> get playingStream => _audioRepository.playingStream;
 
   Stream<Duration> get positionStream => _audioRepository.positionStream;
 
   void dispose() {
+    _disposed = true;
+    _generation++;
     _processingStateSubscription.cancel();
-    _positionSubscription.cancel();
+    _playingSubscription.cancel();
+    _errorSubscription.cancel();
+    _errors.close();
     _currentIndexSubscription.cancel();
     _discontinuitySubscription.cancel();
     _currentSongController.close();

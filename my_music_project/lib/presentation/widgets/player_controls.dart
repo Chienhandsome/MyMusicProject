@@ -55,7 +55,10 @@ class PlayerControls extends ConsumerWidget {
           icon: Icons.skip_previous,
           onPressed: notifier.playPrevious,
         ),
-        _PlayPauseButton(isPlaying: audioState.isPlaying, notifier: notifier),
+        _PlayPauseButton(
+            isPlaying: audioState.isPlaying,
+            isLoading: audioState.isLoading,
+            notifier: notifier),
         _SkipButton(
           icon: Icons.skip_next,
           onPressed: notifier.playNext,
@@ -138,17 +141,24 @@ class _ContinuePlayButton extends StatelessWidget {
 
 class _PlayPauseButton extends StatelessWidget {
   final bool isPlaying;
+  final bool isLoading;
   final AudioNotifier notifier;
 
-  const _PlayPauseButton({required this.isPlaying, required this.notifier});
+  const _PlayPauseButton(
+      {required this.isPlaying,
+      required this.isLoading,
+      required this.notifier});
 
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      icon: Icon(
-        isPlaying ? Icons.pause_circle : Icons.play_circle,
-        size: 64,
-      ),
+      icon: isLoading
+          ? const SizedBox(
+              width: 48, height: 48, child: CircularProgressIndicator())
+          : Icon(
+              isPlaying ? Icons.pause_circle : Icons.play_circle,
+              size: 64,
+            ),
       onPressed: isPlaying ? notifier.pause : notifier.play,
     );
   }
