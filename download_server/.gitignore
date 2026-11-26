@@ -1,0 +1,12 @@
+.secrets/
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+downloads/
+cookies/
+.cookies/
+*[Cc]ookie*.txt
+*[Cc]ookie*.json
+*[Cc]ookie*.sqlite*

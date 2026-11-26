@@ -1,0 +1,11 @@
+**
+!Dockerfile
+!requirements.txt
+!yt_dlp_server/
+!yt_dlp_server/main.py
+!yt_dlp_server/download_auth.py
+# Defense in depth; the allowlist above already excludes every secret/config.
+.secrets/
+**/*[Cc]ookie*.txt
+**/*[Cc]ookie*.json
+**/*[Cc]ookie*.sqlite*

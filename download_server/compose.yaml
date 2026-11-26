@@ -1,0 +1,25 @@
+services:
+  download-server:
+    build:
+      context: .
+    ports:
+      - "${DOWNLOAD_SERVER_BIND_ADDRESS:-127.0.0.1}:${DOWNLOAD_SERVER_PORT:-8000}:8000"
+    environment:
+      ADMIN_API_KEY_FILE: /run/secrets/admin_api_key
+      FIREBASE_PROJECT_NUMBER: ${FIREBASE_PROJECT_NUMBER:-}
+      FIREBASE_APP_IDS: ${FIREBASE_APP_IDS:-}
+    secrets:
+      - admin_api_key
+    volumes:
+      - downloads:/app/downloads
+    restart: unless-stopped
+    init: true
+    mem_limit: 384m
+    cpus: 0.75
+
+secrets:
+  admin_api_key:
+    file: ./.secrets/admin_api_key
+
+volumes:
+  downloads:

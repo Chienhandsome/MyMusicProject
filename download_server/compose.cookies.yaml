@@ -1,0 +1,12 @@
+# Optional: docker compose -f compose.yaml -f compose.cookies.yaml up --build -d
+services:
+  download-server:
+    environment:
+      YTDLP_COOKIES_FILE: /run/secrets/youtube_cookies.txt
+    volumes:
+      - type: bind
+        source: ${YTDLP_COOKIES_SOURCE:-./.secrets/youtube.cookies.txt}
+        target: /run/secrets/youtube_cookies.txt
+        read_only: true
+        bind:
+          create_host_path: false
